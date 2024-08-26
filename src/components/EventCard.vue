@@ -2,7 +2,7 @@
   <div class="event">
     <div v-for="(event, index) in data" :key="event.__2">
       <div
-        v-if="isActiveTime(event.__2, event.__3, index)"
+        v-if="isActiveTime(event.__2, event.__3)"
         class="event__card"
         :class="classObject(event, index)"
       >
@@ -17,7 +17,9 @@
         <!-- время -->
         <div class="event__time-wrapper">
           <p class="event__time">{{ getDurationEvent(event.__2, event.__3) }}</p>
-          <p class="event__time-left" v-if="index === 0">Осталось 16 минут</p>
+          <p class="event__time-left" v-if="index === count.length">
+            {{ isActiveTime(event.__2, event.__3, 'calculateTime') }}
+          </p>
         </div>
 
         <!-- спикер -->
@@ -84,7 +86,7 @@ function getDurationEvent(time, duration) {
   return `${start.getHours()}:${startMinutes} - ${end.getHours()}:${endMinutes}`
 }
 
-function isActiveTime(time, duration) {
+function isActiveTime(time, duration, calculateTime) {
   const dateObject = utils.timeToDate(time.split(':')[0], time.split(':')[1])
 
   const start = new Date(dateObject)
@@ -93,6 +95,10 @@ function isActiveTime(time, duration) {
   if (now >= end) {
     count.push(1)
     return false
+  }
+
+  if (calculateTime) {
+    return `Осталось ${Math.round((end - now) / 1000) / 60} минут`
   }
   return true
 }
@@ -187,11 +193,14 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-right: 30px;
     flex-shrink: 0;
+    @media (max-width: 767px) {
+      flex-wrap: wrap;
+    }
   }
   &__time {
     font-size: 60px;
+    margin-right: 30px;
     @media (max-width: 1000px) {
       font-size: 40px;
     }
