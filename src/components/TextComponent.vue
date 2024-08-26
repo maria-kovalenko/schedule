@@ -1,0 +1,40 @@
+<template>
+  <div class="text-compponent">
+    {{ text }}
+  </div>
+</template>
+
+<script setup>
+defineProps({
+  text: {
+    type: String,
+    default: 'text'
+  }
+})
+</script>
+<style lang="scss">
+.text-compponent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-right: 33px;
+  text-transform: uppercase;
+  height: 38px;
+  border: 1px solid #5e5e5e;
+  &:last-child {
+    margin-right: 0;
+  }
+  @media (max-width: 1000px) {
+    font-size: 12px;
+    margin-right: 0;
+  }
+  @media (max-width: 550px) {
+    padding: 8px 10px;
+    margin-right: 33px;
+
+    height: auto;
+  }
+}
+</style>
