@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- {{ width + '%' }} -->
+    {{ width + '%' }}
     <div class="progress-bar">
       <div ref="progressBarInner" class="progress-bar-inner" :style="`width: ${width}%`"></div>
     </div>
@@ -30,20 +30,21 @@ const width = ref(0)
 const dateObject = utils.timeToDate(props.time.split(':')[0], props.time.split(':')[1])
 
 function startTimer(dateObject, duration) {
-  const start = new Date(dateObject)
-  const end = new Date(start.getTime() + duration * 60000)
+  const start = dateObject.getTime()
+  const interval = duration * 60000
+  const end = start + interval
+  const progressInOne = interval / 100 // 0,0016
 
-  const interval = setInterval(function () {
-    const now = new Date()
-    if (now >= end) {
-      clearInterval(interval)
-      console.log('Время вышло!')
-    } else {
-      const remainingTime = Math.round((end - now) / 1000)
-
-      width.value = Math.round((100 / remainingTime) * 100)
-      // console.log('Осталось секунд: ' + remainingTime)
+  const intervalId = setInterval(function () {
+    let now = new Date().getTime()
+    if (end - now < 0) {
+      clearInterval(intervalId)
+      return
     }
+
+    // console.log(end - now)
+    let val = 100 - Math.round((end - now) / progressInOne) //59000
+    width.value = val
   }, 1000)
 }
 
@@ -61,6 +62,7 @@ if (props.isStart) {
   height: 20px;
   background-color: #47525a;
   border-radius: 32px 32px 0 0;
+  overflow: hidden;
 }
 
 .progress-bar-inner {
