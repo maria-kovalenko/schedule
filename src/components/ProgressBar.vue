@@ -1,15 +1,13 @@
 <template>
   <div>
-    {{ width + '%' }}
     <div class="progress-bar">
-      <div ref="progressBarInner" class="progress-bar-inner" :style="`width: ${width}%`"></div>
+      <div ref="progressBar" class="progress-bar-inner" :style="`width: ${width}`"></div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import utils from '../utils/utils'
 
 const props = defineProps({
   time: {
@@ -26,30 +24,35 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['endTimer'])
+
+const progressBar = ref(null)
 const width = ref(0)
-const dateObject = utils.timeToDate(props.time.split(':')[0], props.time.split(':')[1])
 
-function startTimer(dateObject, duration) {
-  const start = dateObject.getTime()
-  const interval = duration * 60000
-  const end = start + interval
-  const progressInOne = interval / 100 // 0,0016
+function startProgressBar(timeString, duration) {
+  const [hours, minutes] = timeString.split(':').map(Number)
+  const startTimeDate = new Date()
+  startTimeDate.setHours(hours, minutes, 0, 0)
+  const durationMilliseconds = duration * 60 * 1000
 
-  const intervalId = setInterval(function () {
-    let now = new Date().getTime()
-    if (end - now < 0) {
-      clearInterval(intervalId)
-      return
+  function updateProgressBar() {
+    const now = new Date()
+    const elapsed = now - startTimeDate
+    const progress = Math.min((elapsed / durationMilliseconds) * 100, 100)
+    width.value = progress + '%'
+
+    if (progress < 100) {
+      requestAnimationFrame(updateProgressBar)
+    } else {
+      emit('endTimer', true)
     }
+  }
 
-    // console.log(end - now)
-    let val = 100 - Math.round((end - now) / progressInOne) //59000
-    width.value = val
-  }, 1000)
+  updateProgressBar()
 }
 
 if (props.isStart) {
-  startTimer(dateObject, props.duration)
+  startProgressBar(props.time, props.duration)
 }
 </script>
 <style lang="scss">
@@ -72,7 +75,6 @@ if (props.isStart) {
   left: 0;
   height: 20px;
   background: linear-gradient(#74d447 0%, #c6ff52 100%);
-  border-radius: 32px 0 0 0;
   transition: width 0.3s;
 }
 </style>

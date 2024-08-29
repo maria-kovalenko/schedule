@@ -1,24 +1,21 @@
 <template>
   <div class="event">
-    <div v-for="(event, index) in data" :key="event.__2">
-      <div
-        v-if="isActiveTime(event.__2, event.__3)"
-        class="event__card"
-        :class="classObject(event, index)"
-      >
+    <div v-for="(event, index) in data" :key="event.__2" ref="cards" :data-time="event.__2">
+      <div class="event__card" v-if="index >= activeCardIndex" :class="classObject(event, index)">
         <!-- прогресс бар  -->
         <ProgressBar
-          v-if="index === count.length"
+          v-if="index === activeCardIndex"
           :time="event.__2"
           :duration="event.__3"
           :isStart="isStart"
+          @end-timer="updateActiveCard()"
         />
 
         <!-- время -->
         <div class="event__time-wrapper">
           <p class="event__time">{{ getDurationEvent(event.__2, event.__3) }}</p>
-          <p class="event__time-left" v-if="index === count.length">
-            {{ isActiveTime(event.__2, event.__3, 'calculateTime') }}
+          <p class="event__time-left" v-if="index === activeCardIndex">
+            {{ getTimeRemaining(event.__2, event.__3) }}
           </p>
         </div>
 
@@ -51,7 +48,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onBeforeMount, ref, watch } from 'vue'
 import utils from '../utils/utils'
 import TextComponent from './TextComponent.vue'
 import ProgressBar from './ProgressBar.vue'
@@ -66,7 +63,26 @@ defineProps({
 })
 
 const isStart = ref(false)
-const count = []
+const cards = ref([])
+const activeCard = ref(false)
+
+const activeCardIndex = ref(0)
+
+function updateCards() {
+  const intervalId = setInterval(function () {
+    const now = new Date()
+    const currentTime = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0')
+
+    cards.value.forEach((card) => {
+      const cardTime = card.getAttribute('data-time')
+
+      if (cardTime <= currentTime) {
+        activeCardIndex.value++
+        clearInterval(intervalId)
+      }
+    })
+  }, 0)
+}
 
 function getDurationEvent(time, duration) {
   const dateObject = utils.timeToDate(time.split(':')[0], time.split(':')[1])
@@ -86,30 +102,51 @@ function getDurationEvent(time, duration) {
   return `${start.getHours()}:${startMinutes} - ${end.getHours()}:${endMinutes}`
 }
 
-function isActiveTime(time, duration, calculateTime) {
-  const dateObject = utils.timeToDate(time.split(':')[0], time.split(':')[1])
+function getTimeRemaining(startTime, durationMinutes) {
+  let x
+  const [hours, minutes] = startTime.split(':').map(Number)
+  const startDate = new Date()
+  startDate.setHours(hours, minutes, 0, 0)
 
-  const start = new Date(dateObject)
-  const end = new Date(start.getTime() + duration * 60000)
-  const now = new Date()
-  if (now >= end) {
-    count.push(1)
-    return false
+  const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
+
+  const timeinterval = setInterval(updateClock, 1000)
+
+  function updateClock() {
+    const now = new Date()
+    const t = endDate - now
+
+    const minutesRemaining = Math.round(t / 1000 / 60)
+
+    if (t <= 0) {
+      clearInterval(timeinterval)
+      console.log('Время истекло')
+    } else {
+      x = minutesRemaining
+    }
   }
 
-  if (calculateTime) {
-    return `Осталось ${Math.round((end - now) / 1000) / 60} минут`
-  }
-  return true
+  updateClock()
+  return `Осталось ${x} минут `
+}
+
+function updateActiveCard() {
+  activeCard.value = true
 }
 
 function classObject(obj, index) {
   return {
-    'event__card--active': index === count.length,
+    'event__card--active': index === activeCardIndex.value,
     'event__card--dinner': obj.__4 && obj.__5 && obj.__6 && obj.__7 && obj.__8 === '-'
   }
 }
+watch(activeCardIndex, (val) => {
+  return val
+})
 
+onBeforeMount(() => {
+  updateCards()
+})
 onMounted(() => {
   isStart.value = true
 })

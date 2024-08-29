@@ -3,49 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Card Update Example</title>
     <style>
-      .progress-bar {
-        width: 100%;
-        background-color: #f3f3f3;
+      .card {
         border: 1px solid #ccc;
+        padding: 20px;
+        margin: 10px;
         border-radius: 5px;
-        overflow: hidden;
-      }
-      .progress {
-        height: 30px;
-        background-color: #4caf50;
-        width: 0%;
-        transition: width 1s;
+        background-color: #f9f9f9;
       }
     </style>
   </head>
   <body>
-    <div class="progress-bar">
-      <div class="progress" id="progress"></div>
+    <div id="cardsContainer">
+      <div class="card" data-time="15:00">Card 1</div>
+      <div class="card" data-time="15:03">Card 2</div>
+      <div class="card" data-time="15:04">Card 3</div>
     </div>
+
     <script>
-      function startProgressBar(duration) {
-        const progressBar = document.getElementById('progress')
-        let remainingTime = duration
-        const totalTime = duration
+      function updateCards() {
+        const now = new Date()
+        const currentTime = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0')
+        const cards = document.querySelectorAll('.card')
 
-        function updateProgress() {
-          if (remainingTime > 0) {
-            remainingTime--
-            const progress = ((totalTime - remainingTime) / totalTime) * 100
-            progressBar.style.width = progress + '%'
-            setTimeout(updateProgress, 1000)
+        cards.forEach((card) => {
+          const cardTime = card.getAttribute('data-time')
+          if (cardTime <= currentTime) {
+            card.style.display = 'none' // Зеленый цвет для обновленных карточек
           } else {
-            progressBar.style.width = '100%'
+            card.style.backgroundColor = '#f8d7da' // Красный цвет для не обновленных карточек
           }
-        }
-
-        updateProgress()
+        })
       }
 
-      // Запуск прогресс-бара на 10 секунд
-      startProgressBar(10)
+      // Обновляем карточки каждую минуту
+      setInterval(updateCards, 1000)
+      // Первоначальный вызов функции для немедленного обновления
+      updateCards()
     </script>
   </body>
 </html>
