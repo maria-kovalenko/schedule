@@ -8,7 +8,7 @@
           :time="event.__2"
           :duration="event.__3"
           :isStart="isStart"
-          @end-timer="updateActiveCard()"
+          @end-timer="updateActiveCard($event)"
         />
 
         <!-- время -->
@@ -64,7 +64,7 @@ defineProps({
 
 const isStart = ref(false)
 const cards = ref([])
-const activeCard = ref(false)
+// const activeCard = ref(false)
 
 const activeCardIndex = ref(0)
 
@@ -110,7 +110,7 @@ function getTimeRemaining(startTime, durationMinutes) {
 
   const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
 
-  const timeinterval = setInterval(updateClock, 1000)
+  // const timeinterval = setInterval(updateClock, 1000)
 
   function updateClock() {
     const now = new Date()
@@ -118,9 +118,10 @@ function getTimeRemaining(startTime, durationMinutes) {
 
     const minutesRemaining = Math.round(t / 1000 / 60)
 
-    if (t <= 0) {
-      clearInterval(timeinterval)
+    if (t === 0) {
+      // clearInterval(timeinterval)
       console.log('Время истекло')
+      return
     } else {
       x = minutesRemaining
     }
@@ -130,8 +131,9 @@ function getTimeRemaining(startTime, durationMinutes) {
   return `Осталось ${x} минут `
 }
 
-function updateActiveCard() {
-  activeCard.value = true
+function updateActiveCard(e) {
+  // activeCardIndex.value++
+  console.log('ok', e)
 }
 
 function classObject(obj, index) {
